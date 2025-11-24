@@ -1,69 +1,130 @@
 package ba.sum.fsre.kalkulator
 
-import android.content.Intent
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
-import android.widget.EditText
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import kotlin.math.abs
 
 class MainActivity : AppCompatActivity() {
+
+    private lateinit var display: TextView
+
+    private var currentInput = "0"
+    private var storedOperand: Double? = null
+    private var currentOperator: String? = null
+    private var justCalculated = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
-        val numberEdt1 = findViewById<EditText>(R.id.edit_number1)
-        val numberEdt2 = findViewById<EditText>(R.id.edit_number2)
-        val resultTxt = findViewById<TextView>(R.id.text_result)
+        display = findViewById(R.id.text_display)
+        display.text = "0"
 
-        val addBtn=findViewById<Button>(R.id.button_add)
-        val subBtn=findViewById<Button>(R.id.button_sub)
-        val mulBtn=findViewById<Button>(R.id.button_mul)
-        val divBtn=findViewById<Button>(R.id.button_div)
+        // Numeričke tipke
+        val numberButtons = listOf(
+            R.id.btn_0, R.id.btn_1, R.id.btn_2, R.id.btn_3, R.id.btn_4,
+            R.id.btn_5, R.id.btn_6, R.id.btn_7, R.id.btn_8, R.id.btn_9
+        )
 
-        val openSecond=findViewById<Button>(R.id.open_second)
-
-        openSecond.setOnClickListener {
-            val intent=Intent(this, SecondActivity::class.java)
-            val  currentResult = resultTxt.text.toString()
-            intent.putExtra("RESULT_VALUE", currentResult)
-
-            startActivity(intent)
+        numberButtons.forEach { id ->
+            findViewById<Button>(id).setOnClickListener {
+                handleNumberPress((it as Button).text.toString())
+            }
         }
 
-        addBtn.setOnClickListener{
-            val num1 = numberEdt1.text.toString().toInt()
-            val num2 = numberEdt2.text.toString().toInt()
-            resultTxt.text = (num1+num2).toString()
+        // Operacije
+        val operators = mapOf(
+            R.id.btn_add to "+",
+            R.id.btn_sub to "-",
+            R.id.btn_mul to "×",
+            R.id.btn_div to "÷"
+        )
+
+        operators.forEach { (id, op) ->
+            findViewById<Button>(id).setOnClickListener {
+                handleOperatorPress(op)
+            }
         }
 
-        subBtn.setOnClickListener{
-            val num1 = numberEdt1.text.toString().toInt()
-            val num2 = numberEdt2.text.toString().toInt()
-            resultTxt.text = (num1-num2).toString()
+        // Posebne tipke
+        findViewById<Button>(R.id.btn_ac).setOnClickListener { handleAC() }
+        findViewById<Button>(R.id.btn_del).setOnClickListener { handleDel() }
+        findViewById<Button>(R.id.btn_eq).setOnClickListener { calculateResult() }
+    }
+
+    // ----------------------
+    //   FUNKCIJE LOGIKE
+    // ----------------------
+
+    private fun handleNumberPress(num: String) {
+        if (justCalculated) {
+            currentInput = "0"
+            justCalculated = false
         }
 
-        mulBtn.setOnClickListener{
-            val num1 = numberEdt1.text.toString().toInt()
-            val num2 = numberEdt2.text.toString().toInt()
-            resultTxt.text = (num1*num2).toString()
+        currentInput = if (currentInput == "0") num else currentInput + num
+        display.text = currentInput
+    }
+
+    private fun handleOperatorPress(op: String) {
+        if (currentInput == "Error") {
+            handleAC()
+            return
         }
 
-        divBtn.setOnClickListener{
-            val num1 = numberEdt1.text.toString().toInt()
-            val num2 = numberEdt2.text.toString().toInt()
-            resultTxt.text = (num1/num2).toString()
+        storedOperand = currentInput.toDouble()
+        currentOperator = op
+        currentInput = "0"
+        display.text = "0"
+    }
+
+    private fun handleAC() {
+        currentInput = "0"
+        storedOperand = null
+        currentOperator = null
+        justCalculated = false
+        display.text = "0"
+    }
+
+    private fun handleDel() {
+        if (justCalculated) {
+            handleAC()
+            return
         }
 
+        currentInput = if (currentInput.length > 1)
+            currentInput.dropLast(1)
+        else
+            "0"
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
+        display.text = currentInput
+    }
+
+    private fun calculateResult() {
+        val op = currentOperator ?: return
+        val first = storedOperand ?: return
+        val second = currentInput.toDoubleOrNull() ?: return
+
+        val result = when (op) {
+            "+" -> first + second
+            "-" -> first - second
+            "×" -> first * second
+            "÷" -> if (second == 0.0) {
+                display.text = "Error"
+                justCalculated = true
+                return
+            } else first / second
+            else -> return
         }
+
+        display.text = result.toString()
+        currentInput = result.toString()
+        storedOperand = null
+        currentOperator = null
+        justCalculated = true
     }
 }

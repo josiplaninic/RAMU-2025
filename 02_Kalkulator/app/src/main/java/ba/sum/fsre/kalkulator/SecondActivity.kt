@@ -38,12 +38,6 @@ class SecondActivity : AppCompatActivity() {
                 resTxt2.text = (passedNumber * passedNumber).toString()
         }
 
-
-
-
-
-
-
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
