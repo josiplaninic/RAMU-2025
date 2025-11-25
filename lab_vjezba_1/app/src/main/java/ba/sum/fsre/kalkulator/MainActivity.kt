@@ -24,7 +24,6 @@ class MainActivity : AppCompatActivity() {
         display = findViewById(R.id.text_display)
         display.text = "0"
 
-        // Numeričke tipke
         val numberButtons = listOf(
             R.id.btn_0, R.id.btn_1, R.id.btn_2, R.id.btn_3, R.id.btn_4,
             R.id.btn_5, R.id.btn_6, R.id.btn_7, R.id.btn_8, R.id.btn_9
@@ -36,7 +35,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Operacije
         val operators = mapOf(
             R.id.btn_add to "+",
             R.id.btn_sub to "-",
@@ -50,15 +48,10 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Posebne tipke
         findViewById<Button>(R.id.btn_ac).setOnClickListener { handleAC() }
         findViewById<Button>(R.id.btn_del).setOnClickListener { handleDel() }
         findViewById<Button>(R.id.btn_eq).setOnClickListener { calculateResult() }
     }
-
-    // ----------------------
-    //   FUNKCIJE LOGIKE
-    // ----------------------
 
     private fun handleNumberPress(num: String) {
         if (justCalculated) {
